@@ -187,6 +187,28 @@
     word-break:break-all;
     margin-top:6px;
   }
+  .pix-linha{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:6px;
+    flex-wrap:wrap;
+  }
+  .pix-linha .pix-chave{ margin-top:0; }
+  .btn-copiar{
+    background:var(--verde);
+    color:#fff;
+    border:none;
+    padding:7px 14px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:600;
+    font-family:inherit;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn-copiar:hover{ background:var(--verde-escuro); }
+  .btn-copiar.copiado{ background:#2E7D32; }
   input[type=file]{
     width:100%;
     margin-top:8px;
@@ -229,12 +251,12 @@
 
 <div class="topo">
   <h1>Cada número é um gesto de carinho</h1>
-  <p>Ajuda contra o câncer de próstata. Estamos organizando esta rifa para apoiar o Marcos Vinícios de Oliveira nas despesas do tratamento. Sua contribuição faz toda a diferença — e você ainda concorre a um MacBook Air M1.</p>
+  <p>Ajuda contra o câncer de próstata. Estamos organizando esta rifa para apoiar o Marcos Vinícius de Oliveira nas despesas do tratamento. Sua contribuição faz toda a diferença — e você ainda concorre a um MacBook Air M1.</p>
   <div class="homenageado">
-    <img src="primo.jpg" alt="Marcos Vinícios de Oliveira">
+    <img src="primo.jpg" alt="Marcos Vinícius de Oliveira">
     <div class="texto">
       <div class="label">Em apoio a</div>
-      <div class="nome">Marcos Vinícios de Oliveira</div>
+      <div class="nome">Marcos Vinícius de Oliveira</div>
     </div>
   </div>
   <div class="premio">🎁 Prêmio: MacBook Air M1</div>
@@ -279,9 +301,12 @@
     <div class="secao">
       <h2>3. Pagamento via PIX</h2>
       <div class="pix-box">
-        Chave PIX (CPF):
-        <div class="pix-chave">CHAVE_PIX_AQUI</div>
-        Nome do favorecido: NOME_COMPLETO_AQUI
+        Chave PIX (Telefone):
+        <div class="pix-linha">
+          <div class="pix-chave" id="pixChave">(47) 99957-2744</div>
+          <button type="button" class="btn-copiar" id="btnCopiarPix" onclick="copiarChavePix()">Copiar chave</button>
+        </div>
+        Nome do favorecido: Vera Guimarães
       </div>
 
       <label for="comprovante">Anexe o comprovante do PIX</label>
@@ -299,9 +324,45 @@
 </div>
 
 <script>
-const ENDPOINT = 'COLE_AQUI_A_URL_DO_APP_DA_WEB';
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbya0ovAgcEIXPREFzRTO35EdTork7JbnAy8JKtHBTQDSZ2OtlPJ3ArRDkz3xGD_U7aM/exec';
 
 let pacoteSelecionado = null;
+
+function copiarChavePix(){
+  const chave = '47999572744'; // número puro, sem formatação, ideal para colar no app do banco
+  const btn = document.getElementById('btnCopiarPix');
+
+  const marcarCopiado = () => {
+    const textoOriginal = btn.textContent;
+    btn.textContent = 'Copiado ✓';
+    btn.classList.add('copiado');
+    setTimeout(() => {
+      btn.textContent = textoOriginal;
+      btn.classList.remove('copiado');
+    }, 2000);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(chave).then(marcarCopiado).catch(() => {
+      copiarFallback(chave);
+      marcarCopiado();
+    });
+  } else {
+    copiarFallback(chave);
+    marcarCopiado();
+  }
+}
+
+function copiarFallback(texto){
+  const temp = document.createElement('textarea');
+  temp.value = texto;
+  temp.style.position = 'fixed';
+  temp.style.opacity = '0';
+  document.body.appendChild(temp);
+  temp.select();
+  document.execCommand('copy');
+  document.body.removeChild(temp);
+}
 
 document.querySelectorAll('.pacote').forEach(el => {
   el.addEventListener('click', () => {
