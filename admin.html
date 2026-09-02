@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — Rifa Macbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --verde:#0F3D3E; --verde-escuro:#0A2B2C; --dourado:#E8A33D;
+    --papel:#FBF7EE; --texto:#1D2A28;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:#F1EEE4; color:var(--texto);
+    font-family:'Work Sans',sans-serif;
+  }
+  header{
+    background:var(--verde-escuro); color:var(--papel);
+    padding:24px 28px;
+  }
+  header h1{
+    font-family:'Fraunces',serif; margin:0; font-size:24px;
+  }
+  .login{
+    max-width:340px; margin:80px auto; background:#fff;
+    padding:32px; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,.08);
+  }
+  .login h2{ font-family:'Fraunces',serif; margin-top:0; }
+  .login input{
+    width:100%; padding:12px; border:1.5px solid #DCD4BF; border-radius:8px;
+    font-size:15px; margin-top:6px; margin-bottom:16px;
+  }
+  .login button, .cta{
+    width:100%; background:var(--verde); color:#fff; border:none;
+    padding:12px; border-radius:8px; font-weight:600; cursor:pointer; font-size:15px;
+  }
+  .lista{ max-width:900px; margin:28px auto; padding:0 20px; }
+  .vazio{ text-align:center; color:#7B8A87; padding:60px 0; }
+  .pedido{
+    background:#fff; border-radius:12px; padding:20px 24px; margin-bottom:16px;
+    box-shadow:0 4px 14px rgba(0,0,0,.05);
+    display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  }
+  .pedido .info b{ font-size:16px; }
+  .pedido .info div{ color:#5A6B67; font-size:14px; margin-top:2px; }
+  .selo{
+    display:inline-block; background:#EAF2EF; color:var(--verde);
+    font-size:12px; font-weight:600; padding:3px 10px; border-radius:100px; margin-top:8px;
+  }
+  .acoes{ display:flex; flex-direction:column; gap:8px; min-width:160px; }
+  .acoes a{
+    text-align:center; font-size:13px; color:var(--verde); text-decoration:underline;
+  }
+  .btn-aprovar{
+    background:var(--verde); color:#fff; border:none; padding:10px; border-radius:8px;
+    font-weight:600; cursor:pointer;
+  }
+  .btn-rejeitar{
+    background:#fff; color:#8A2424; border:1.5px solid #E8B4B4; padding:9px; border-radius:8px;
+    font-weight:600; cursor:pointer;
+  }
+  .top-bar{
+    max-width:900px; margin:20px auto 0; padding:0 20px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .top-bar button{
+    background:none; border:1px solid #C9C0AC; padding:8px 14px; border-radius:8px; cursor:pointer;
+  }
+  .abas{
+    max-width:900px; margin:16px auto 0; padding:0 20px; display:flex; gap:10px;
+  }
+  .aba{
+    padding:8px 16px; border-radius:8px; border:1px solid #C9C0AC; background:#fff;
+    cursor:pointer; font-size:14px; font-weight:600; color:#5A6B67;
+  }
+  .aba.ativa{
+    background:var(--verde); color:#fff; border-color:var(--verde);
+  }
+  .btn-reenviar{
+    background:#fff; color:var(--verde); border:1.5px solid var(--verde); padding:9px; border-radius:8px;
+    font-weight:600; cursor:pointer;
+  }
+  .numeros-aprovados{
+    font-family:monospace; font-weight:600; color:var(--verde); margin-top:4px;
+  }
+</style>
+</head>
+<body>
+
+<header><h1>Painel — Rifa Macbook Air M1</h1></header>
+
+<div id="telaLogin" class="login">
+  <h2>Entrar</h2>
+  <label>Senha</label>
+  <input type="password" id="senha" placeholder="Senha do painel">
+  <button onclick="entrar()">Entrar</button>
+  <div id="erroLogin" style="color:#8A2424;font-size:13px;margin-top:10px;"></div>
+</div>
+
+<div id="telaPainel" style="display:none;">
+  <div class="top-bar">
+    <span id="contador"></span>
+    <button onclick="carregar()">Atualizar</button>
+  </div>
+  <div class="abas">
+    <div class="aba ativa" id="abaPendentes" onclick="mudarAba('pendentes')">Pendentes</div>
+    <div class="aba" id="abaAprovados" onclick="mudarAba('aprovados')">Aprovados / Reenviar e-mail</div>
+  </div>
+  <div class="lista" id="lista"></div>
+</div>
+
+<script>
+const ENDPOINT = 'COLE_AQUI_A_URL_DO_APP_DA_WEB';
+let SENHA = '';
+let abaAtual = 'pendentes';
+
+function entrar(){
+  SENHA = document.getElementById('senha').value;
+  carregar();
+}
+
+function mudarAba(aba){
+  abaAtual = aba;
+  document.getElementById('abaPendentes').classList.toggle('ativa', aba === 'pendentes');
+  document.getElementById('abaAprovados').classList.toggle('ativa', aba === 'aprovados');
+  carregar();
+}
+
+async function chamar(payload){
+  const resp = await fetch(ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  return resp.json();
+}
+
+async function carregar(){
+  if (abaAtual === 'pendentes') return carregarPendentes();
+  return carregarAprovados();
+}
+
+async function carregarPendentes(){
+  const data = await chamar({ action: 'listarPendentes', senha: SENHA });
+
+  if (!data.ok) {
+    document.getElementById('erroLogin').textContent = data.erro || 'Erro ao entrar.';
+    return;
+  }
+
+  document.getElementById('telaLogin').style.display = 'none';
+  document.getElementById('telaPainel').style.display = 'block';
+  document.getElementById('contador').textContent = data.pedidos.length + ' pedido(s) pendente(s)';
+
+  const lista = document.getElementById('lista');
+  lista.innerHTML = '';
+
+  if (data.pedidos.length === 0) {
+    lista.innerHTML = '<div class="vazio">Nenhum pedido pendente no momento 🎉</div>';
+    return;
+  }
+
+  data.pedidos.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'pedido';
+    div.innerHTML = `
+      <div class="info">
+        <b>${p.nome}</b>
+        <div>📱 ${p.contato} · ✉️ ${p.email}</div>
+        <div>${p.qtd} número(s) · R$ ${p.valor},00</div>
+        <span class="selo">Pedido ${p.id}</span>
+      </div>
+      <div class="acoes">
+        ${p.comprovanteUrl ? `<a href="${p.comprovanteUrl}" target="_blank">Ver comprovante</a>` : '<span style="font-size:13px;color:#B08A2B;">Sem comprovante</span>'}
+        <button class="btn-aprovar" onclick="aprovar(${p.linha}, this)">Aprovar e enviar números</button>
+        <button class="btn-rejeitar" onclick="rejeitar(${p.linha}, this)">Rejeitar</button>
+      </div>
+    `;
+    lista.appendChild(div);
+  });
+}
+
+async function carregarAprovados(){
+  const data = await chamar({ action: 'listarAprovados', senha: SENHA });
+
+  if (!data.ok) {
+    document.getElementById('erroLogin').textContent = data.erro || 'Erro ao entrar.';
+    return;
+  }
+
+  document.getElementById('telaLogin').style.display = 'none';
+  document.getElementById('telaPainel').style.display = 'block';
+  document.getElementById('contador').textContent = data.pedidos.length + ' pedido(s) aprovado(s)';
+
+  const lista = document.getElementById('lista');
+  lista.innerHTML = '';
+
+  if (data.pedidos.length === 0) {
+    lista.innerHTML = '<div class="vazio">Nenhum pedido aprovado ainda.</div>';
+    return;
+  }
+
+  data.pedidos.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'pedido';
+    div.innerHTML = `
+      <div class="info">
+        <b>${p.nome}</b>
+        <div>📱 ${p.contato} · ✉️ ${p.email}</div>
+        <div>${p.qtd} número(s) · R$ ${p.valor},00</div>
+        <div class="numeros-aprovados">${p.numeros}</div>
+        <span class="selo">Pedido ${p.id}</span>
+      </div>
+      <div class="acoes">
+        <button class="btn-reenviar" onclick="reenviar(${p.linha}, this)">Reenviar e-mail</button>
+      </div>
+    `;
+    lista.appendChild(div);
+  });
+}
+
+async function reenviar(linha, btn){
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  const data = await chamar({ action: 'reenviarEmail', senha: SENHA, linha });
+  if (data.ok) {
+    btn.textContent = 'Enviado ✓';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Reenviar e-mail'; }, 2500);
+  } else {
+    alert('Erro: ' + data.erro);
+    btn.disabled = false;
+    btn.textContent = 'Reenviar e-mail';
+  }
+}
+
+async function aprovar(linha, btn){
+  btn.disabled = true;
+  btn.textContent = 'Processando...';
+  const data = await chamar({ action: 'aprovarPedido', senha: SENHA, linha });
+  if (data.ok) {
+    alert('Aprovado! Números enviados: ' + data.numeros.join(', '));
+    carregar();
+  } else {
+    alert('Erro: ' + data.erro);
+    btn.disabled = false;
+    btn.textContent = 'Aprovar e enviar números';
+  }
+}
+
+async function rejeitar(linha, btn){
+  if (!confirm('Rejeitar este pedido?')) return;
+  btn.disabled = true;
+  const data = await chamar({ action: 'rejeitarPedido', senha: SENHA, linha });
+  if (data.ok) carregar();
+  else alert('Erro: ' + data.erro);
+}
+</script>
+
+</body>
+</html>
