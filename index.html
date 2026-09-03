@@ -58,33 +58,33 @@
   .homenageado{
     display:flex;
     align-items:center;
-    gap:14px;
+    gap:16px;
     justify-content:center;
     margin:28px auto 6px;
-    max-width:340px;
+    max-width:400px;
     background:rgba(255,255,255,0.06);
     border:1px solid rgba(255,255,255,0.15);
-    padding:12px 20px 12px 12px;
+    padding:14px 26px 14px 14px;
     border-radius:100px;
   }
   .homenageado img{
-    width:56px; height:56px;
+    width:88px; height:88px;
     border-radius:50%;
     object-fit:cover;
-    border:2px solid var(--dourado);
+    border:3px solid var(--dourado);
   }
   .homenageado .texto{
     text-align:left;
   }
   .homenageado .texto .label{
-    font-size:11px;
+    font-size:12px;
     color:#9FB0C9;
     text-transform:uppercase;
     letter-spacing:0.5px;
   }
   .homenageado .texto .nome{
     font-family:'Fraunces',serif;
-    font-size:16px;
+    font-size:20px;
     color:var(--papel);
   }
   .container{
@@ -230,6 +230,23 @@
   }
   .enviar:hover{ background:var(--verde-escuro); }
   .enviar:disabled{ opacity:0.6; cursor:default; }
+  .btn-regulamento{
+    display:block;
+    width:100%;
+    text-align:center;
+    box-sizing:border-box;
+    background:transparent;
+    color:var(--verde);
+    border:1.5px solid var(--verde);
+    padding:13px;
+    border-radius:10px;
+    font-size:14px;
+    font-weight:600;
+    font-family:inherit;
+    text-decoration:none;
+    margin-top:10px;
+  }
+  .btn-regulamento:hover{ background:#E9EEF6; }
   .msg{
     margin-top:16px;
     padding:14px;
@@ -313,6 +330,7 @@
       <input type="file" id="comprovante" accept="image/*,.pdf">
 
       <button class="enviar" id="btnEnviar">Enviar comprovante e concorrer</button>
+      <a href="COLE_AQUI_O_LINK_DO_REGULAMENTO" target="_blank" class="btn-regulamento">📄 Ver regulamento completo da rifa</a>
       <div class="msg" id="msg"></div>
     </div>
   </div>
